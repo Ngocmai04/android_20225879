@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">StudentManager</string>
+    <string name="hint_mssv">MSSV</string>
+    <string name="hint_name">Họ tên</string>
+    <string name="hint_phone">Số điện thoại</string>
+    <string name="hint_address">Địa chỉ</string>
+
+    <string name="btn_add">Thêm sinh viên</string>
+    <string name="btn_update">Cập nhật thông tin</string>
+    <string name="btn_delete">Xóa</string>
+
+
+</resources>
