@@ -1,43 +1,46 @@
 package com.example.studentmanager.vm
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.*
+import com.example.studentmanager.data.AppDatabase
+import com.example.studentmanager.data.StudentRepository
 import com.example.studentmanager.model.Student
+import kotlinx.coroutines.launch
 
-class StudentViewModel : ViewModel() {
+class StudentViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Internal mutable storage (the requirement says MutableList in ViewModel)
-    private val studentsStore: MutableList<Student> = mutableListOf(
-        Student("20210001", "Nguyễn Văn A", "0900000001", "Hà Nội"),
-        Student("20210002", "Trần Thị B", "0900000002", "Hải Phòng")
-    )
+    private val repo: StudentRepository
 
-    private val _students = MutableLiveData<List<Student>>(studentsStore.toList())
-    val students: LiveData<List<Student>> = _students
+    val students: LiveData<List<Student>>
 
-    fun addStudent(student: Student): Boolean {
-        // MSSV must be unique
-        if (studentsStore.any { it.mssv == student.mssv }) return false
-        studentsStore.add(student)
-        _students.value = studentsStore.toList()
-        return true
+    private val _selectedStudent = MutableLiveData<Student?>()
+    val selectedStudent: LiveData<Student?> = _selectedStudent
+
+    init {
+        val dao = AppDatabase.getInstance(application).studentDao()
+        repo = StudentRepository(dao)
+        students = repo.students.asLiveData()
     }
 
-    fun deleteStudent(mssv: String) {
-        studentsStore.removeAll { it.mssv == mssv }
-        _students.value = studentsStore.toList()
+    fun loadStudent(mssv: String) {
+        viewModelScope.launch {
+            _selectedStudent.value = repo.getStudentByMssv(mssv)
+        }
     }
 
-    fun getStudentByMssv(mssv: String): Student? {
-        return studentsStore.firstOrNull { it.mssv == mssv }
+    fun clearSelectedStudent() {
+        _selectedStudent.value = null
     }
 
-    fun updateStudent(updated: Student): Boolean {
-        val index = studentsStore.indexOfFirst { it.mssv == updated.mssv }
-        if (index == -1) return false
-        studentsStore[index] = updated
-        _students.value = studentsStore.toList()
-        return true
+    fun addStudent(student: Student) = viewModelScope.launch {
+        repo.addStudent(student)
+    }
+
+    fun updateStudent(student: Student) = viewModelScope.launch {
+        repo.updateStudent(student)
+    }
+
+    fun deleteStudent(mssv: String) = viewModelScope.launch {
+        repo.deleteStudent(mssv)
     }
 }

@@ -43,9 +43,10 @@ class StudentListFragment : Fragment(R.layout.fragment_student_list) {
 
         binding.rvStudents.adapter = adapter
 
-        vm.students.observe(viewLifecycleOwner) { list ->
-            adapter.submitList(list)
+        vm.students.observe(viewLifecycleOwner) {
+            adapter.submitList(it)
         }
+
 
         binding.btnShowList.setOnClickListener {
             vm.students.value?.let {
